@@ -1,37 +1,50 @@
 "use client";
 import { useState } from "react";
-
+ 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
-
+ 
 export default function Chat(): JSX.Element {
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: "Bonjour 👋 Je suis l'assistant de Neotravel. Pouvez-vous m'expliquer votre besoin ?" }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-
+ 
   const sendMessage = async () => {
     if (!input.trim()) return;
-
-    const userMsg: Message = { role: "user", content: input };
-    setMessages(prev => [...prev, userMsg]);
+  
+    // Ajout du message utilisateur
+    setMessages(prev => [...prev, { role: "user", content: input }]);
     setInput("");
-    setLoading(true);
-
-    // Réponse fictive pour l'instant — on branchera n8n après
-    setTimeout(() => {
-      const botMsg: Message = { role: "assistant", content: "Je traite votre demande, un instant..." };
-      setMessages(prev => [...prev, botMsg]);
-      setLoading(false);
-    }, 1000);
+  
+    try {
+      // Appel à n8n
+      const response = await fetch("https://aymenfeniniche.app.n8n.cloud/webhook-test/neotravel-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chatInput: input,
+          sessionId: "session-1"
+        })
+      });
+  
+      const data = await response.json();
+  
+      // Ajout de la réponse de l'agent
+      setMessages(prev => [...prev, { role: "assistant", content: data.output }]);
+  
+    } catch (error) {
+      // Si n8n ne répond pas
+      setMessages(prev => [...prev, { role: "assistant", content: "Une erreur est survenue, veuillez réessayer." }]);
+    }
   };
-
+ 
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "sans-serif", background: "#f5f5f5" }}>
-
+ 
       {/* Sidebar */}
       <div style={{ width: "300px", background: "white", borderRight: "1px solid #e0e0e0", display: "flex", flexDirection: "column", padding: "20px" }}>
         <h2 style={{ color: "#C8E000", fontWeight: "900", fontSize: "1.5rem", marginBottom: "16px" }}>Neotravel</h2>
@@ -45,15 +58,15 @@ export default function Chat(): JSX.Element {
         </div>
         <p style={{ fontSize: "0.7rem", color: "#999", marginTop: "auto" }}>Les conversations sont sauvegardées 30 jours.</p>
       </div>
-
+ 
       {/* Zone chat */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-
+ 
         {/* Header */}
         <div style={{ padding: "16px 24px", borderBottom: "1px solid #e0e0e0", background: "white", fontSize: "0.9rem", color: "#333" }}>
           Bonjour 👋 Je suis l'assistant de Neotravel. Je vais vous aider à préparer votre demande de transport.
         </div>
-
+ 
         {/* Messages */}
         <div style={{ flex: 1, overflowY: "auto", padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
           {messages.map((msg, i) => (
@@ -84,7 +97,7 @@ export default function Chat(): JSX.Element {
             </div>
           )}
         </div>
-
+ 
         {/* Input */}
         <div style={{ padding: "16px 24px", background: "white", borderTop: "1px solid #e0e0e0", display: "flex", gap: "12px" }}>
           <input
