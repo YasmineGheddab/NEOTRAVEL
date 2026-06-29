@@ -51,7 +51,7 @@ export default function Chat(): JSX.Element {
         <button style={{ background: "black", color: "white", border: "none", borderRadius: "8px", padding: "12px", fontWeight: "700", cursor: "pointer", marginBottom: "16px" }}>
           + Nouvelle conversation
         </button>
-        <input placeholder="Rechercher..." style={{ border: "1px solid #e0e0e0", borderRadius: "8px", padding: "10px", marginBottom: "24px" }} />
+        <input placeholder="Rechercher..." style={{ border: "1px solid #e0e0e0", borderRadius: "8px", padding: "10px", marginBottom: "24px", color: "#111827", backgroundColor: "#ffffff",caretColor: "#111827" }} />
         <p style={{ fontWeight: "700", fontSize: "0.85rem", marginBottom: "8px" }}>Mes conversations</p>
         <div style={{ background: "#f0f0f0", borderRadius: "8px", padding: "10px", fontSize: "0.8rem", color: "#333" }}>
           Bonjour 👋 Je suis l'assistant Neotravel...
@@ -105,7 +105,16 @@ export default function Chat(): JSX.Element {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && sendMessage()}
             placeholder="Poser une question..."
-            style={{ flex: 1, border: "1px solid #e0e0e0", borderRadius: "8px", padding: "12px 16px", fontSize: "0.9rem", outline: "none" }}
+            style={{
+  flex: 1,
+  border: "1px solid #e0e0e0",
+  borderRadius: "8px",
+  padding: "12px 16px",
+  fontSize: "0.9rem",
+  outline: "none",
+  color: "#000",
+  backgroundColor: "#fff"
+}}
           />
           <button
             onClick={sendMessage}
