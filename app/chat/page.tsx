@@ -75,16 +75,18 @@ export default function Chat(): JSX.Element {
                 <div style={{ background: "#C8E000", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "900", fontSize: "0.85rem", flexShrink: 0 }}>N</div>
               )}
               <div style={{
-                background: msg.role === "user" ? "#C8E000" : "white",
-                border: msg.role === "assistant" ? "1px solid #e0e0e0" : "none",
-                borderRadius: "12px",
-                padding: "12px 16px",
-                maxWidth: "60%",
-                fontSize: "0.9rem",
-                lineHeight: "1.5"
-              }}>
-                {msg.content}
-              </div>
+  background: msg.role === "user" ? "#C8E000" : "white",
+  border: msg.role === "assistant" ? "1px solid #e0e0e0" : "none",
+  borderRadius: "12px",
+  padding: "12px 16px",
+  maxWidth: "60%",
+  fontSize: "0.9rem",
+  lineHeight: "1.5",
+  color: "#111827",
+  wordBreak: "break-word"
+}}>
+  {msg.content}
+</div>
               {msg.role === "user" && (
                 <div style={{ background: "#333", color: "white", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "700", fontSize: "0.85rem", flexShrink: 0 }}>U</div>
               )}
