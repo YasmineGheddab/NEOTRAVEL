@@ -1,131 +1,280 @@
 "use client";
-import { useState } from "react";
- 
+import { useState, useRef, useEffect } from "react";
+
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
- 
+
 export default function Chat(): JSX.Element {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Bonjour 👋 Je suis l'assistant de Neotravel. Pouvez-vous m'expliquer votre besoin ?" }
+    { role: "assistant", content: "Bonjour 👋 Je suis l'assistant de Neotravel. Pouvez-vous m'expliquer votre besoin de transport ?" }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
- 
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
   const sendMessage = async () => {
-    if (!input.trim()) return;
-  
-    // Ajout du message utilisateur
-    setMessages(prev => [...prev, { role: "user", content: input }]);
+    if (!input.trim() || loading) return;
+
+    const newMessages: Message[] = [...messages, { role: "user", content: input }];
+    setMessages(newMessages);
     setInput("");
-  
+    setLoading(true);
+
     try {
-      // Appel à n8n
-      const response = await fetch("https://aymenfeniniche.app.n8n.cloud/webhook-test/neotravel-chat", {
+      const historyText = newMessages
+        .map(m => `${m.role === "user" ? "Utilisateur" : "Assistant"}: ${m.content}`)
+        .join("\n");
+
+      const fullPrompt = `[Historique de la conversation]\n${historyText}\n\n[Nouveau message]\n${input}`;
+
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chatInput: input,
-          sessionId: "session-1"
-        })
+        body: JSON.stringify({ chatInput: fullPrompt })
       });
-  
+
       const data = await response.json();
-  
-      // Ajout de la réponse de l'agent
-      setMessages(prev => [...prev, { role: "assistant", content: data.output }]);
-  
+      setMessages(prev => [...prev, { role: "assistant", content: data.output || "Désolé, je n'ai pas pu traiter votre demande. Pouvez-vous réessayer ?" }]);
+
     } catch (error) {
-      // Si n8n ne répond pas
-      setMessages(prev => [...prev, { role: "assistant", content: "Une erreur est survenue, veuillez réessayer." }]);
+      setMessages(prev => [...prev, { role: "assistant", content: "Une erreur est survenue. Veuillez réessayer." }]);
+    } finally {
+      setLoading(false);
     }
   };
- 
+
   return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: "sans-serif", background: "#f5f5f5" }}>
- 
-      {/* Sidebar */}
-      <div style={{ width: "300px", background: "white", borderRight: "1px solid #e0e0e0", display: "flex", flexDirection: "column", padding: "20px" }}>
-        <h2 style={{ color: "#C8E000", fontWeight: "900", fontSize: "1.5rem", marginBottom: "16px" }}>Neotravel</h2>
-        <button style={{ background: "black", color: "white", border: "none", borderRadius: "8px", padding: "12px", fontWeight: "700", cursor: "pointer", marginBottom: "16px" }}>
-          + Nouvelle conversation
-        </button>
-        <input placeholder="Rechercher..." style={{ border: "1px solid #e0e0e0", borderRadius: "8px", padding: "10px", marginBottom: "24px", color: "#111827", backgroundColor: "#ffffff",caretColor: "#111827" }} />
-        <p style={{ fontWeight: "700", fontSize: "0.85rem", marginBottom: "8px" }}>Mes conversations</p>
-        <div style={{ background: "#f0f0f0", borderRadius: "8px", padding: "10px", fontSize: "0.8rem", color: "#333" }}>
-          Bonjour 👋 Je suis l'assistant Neotravel...
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      height: "100vh",
+      fontFamily: "'Inter', -apple-system, sans-serif",
+      background: "#FAFAF8"
+    }}>
+
+      {/* En-tête */}
+      <header style={{
+        padding: "20px 32px",
+        borderBottom: "1px solid #E5E5E0",
+        background: "#FFFFFF",
+        display: "flex",
+        alignItems: "center",
+        gap: "12px"
+      }}>
+        <div style={{
+          width: "36px",
+          height: "36px",
+          borderRadius: "10px",
+          background: "#1A1A1A",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#C8E000",
+          fontWeight: 900,
+          fontSize: "18px"
+        }} aria-hidden="true">N</div>
+        <div>
+          <h1 style={{ fontSize: "16px", fontWeight: 700, color: "#1A1A1A", margin: 0 }}>
+            Neotravel
+          </h1>
+          <p style={{ fontSize: "13px", color: "#6B6B68", margin: 0 }}>
+            Assistant transport de groupe
+          </p>
         </div>
-        <p style={{ fontSize: "0.7rem", color: "#999", marginTop: "auto" }}>Les conversations sont sauvegardées 30 jours.</p>
-      </div>
- 
-      {/* Zone chat */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
- 
-        {/* Header */}
-        <div style={{ padding: "16px 24px", borderBottom: "1px solid #e0e0e0", background: "white", fontSize: "0.9rem", color: "#333" }}>
-          Bonjour 👋 Je suis l'assistant de Neotravel. Je vais vous aider à préparer votre demande de transport.
-        </div>
- 
-        {/* Messages */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
-          {messages.map((msg, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start", alignItems: "flex-start", gap: "10px" }}>
-              {msg.role === "assistant" && (
-                <div style={{ background: "#C8E000", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "900", fontSize: "0.85rem", flexShrink: 0 }}>N</div>
-              )}
-              <div style={{
-  background: msg.role === "user" ? "#C8E000" : "white",
-  border: msg.role === "assistant" ? "1px solid #e0e0e0" : "none",
-  borderRadius: "12px",
-  padding: "12px 16px",
-  maxWidth: "60%",
-  fontSize: "0.9rem",
-  lineHeight: "1.5",
-  color: "#111827",
-  wordBreak: "break-word"
-}}>
-  {msg.content}
-</div>
-              {msg.role === "user" && (
-                <div style={{ background: "#333", color: "white", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "700", fontSize: "0.85rem", flexShrink: 0 }}>U</div>
-              )}
+      </header>
+
+      {/* Zone de conversation */}
+      <main
+        role="log"
+        aria-live="polite"
+        aria-label="Conversation avec l'assistant Neotravel"
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "32px 24px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
+          maxWidth: "760px",
+          width: "100%",
+          margin: "0 auto"
+        }}
+      >
+        {messages.map((msg, i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
+              alignItems: "flex-start",
+              gap: "10px"
+            }}
+          >
+            {msg.role === "assistant" && (
+              <div
+                aria-hidden="true"
+                style={{
+                  background: "#1A1A1A",
+                  color: "#C8E000",
+                  borderRadius: "50%",
+                  width: "32px",
+                  height: "32px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 900,
+                  fontSize: "14px",
+                  flexShrink: 0
+                }}
+              >
+                N
+              </div>
+            )}
+            <div
+              style={{
+                background: msg.role === "user" ? "#C8E000" : "#FFFFFF",
+                color: "#1A1A1A",
+                border: msg.role === "assistant" ? "1px solid #E5E5E0" : "none",
+                borderRadius: "16px",
+                borderTopLeftRadius: msg.role === "assistant" ? "4px" : "16px",
+                borderTopRightRadius: msg.role === "user" ? "4px" : "16px",
+                padding: "14px 18px",
+                maxWidth: "min(560px, 80%)",
+                fontSize: "15px",
+                lineHeight: "1.6"
+              }}
+            >
+              {(msg.content || "").split("\n").map((line, j) => (
+                <span key={j}>
+                  {line}
+                  <br />
+                </span>
+              ))}
             </div>
-          ))}
-          {loading && (
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div style={{ background: "#C8E000", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "900", fontSize: "0.85rem" }}>N</div>
-              <div style={{ background: "white", border: "1px solid #e0e0e0", borderRadius: "12px", padding: "12px 16px", fontSize: "0.9rem" }}>...</div>
+            {msg.role === "user" && (
+              <div
+                aria-hidden="true"
+                style={{
+                  background: "#1A1A1A",
+                  color: "#FFFFFF",
+                  borderRadius: "50%",
+                  width: "32px",
+                  height: "32px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 700,
+                  fontSize: "13px",
+                  flexShrink: 0
+                }}
+              >
+                Vous
+              </div>
+            )}
+          </div>
+        ))}
+
+        {loading && (
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }} aria-label="L'assistant rédige une réponse">
+            <div
+              aria-hidden="true"
+              style={{
+                background: "#1A1A1A",
+                color: "#C8E000",
+                borderRadius: "50%",
+                width: "32px",
+                height: "32px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 900,
+                fontSize: "14px"
+              }}
+            >
+              N
             </div>
-          )}
-        </div>
- 
-        {/* Input */}
-        <div style={{ padding: "16px 24px", background: "white", borderTop: "1px solid #e0e0e0", display: "flex", gap: "12px" }}>
+            <div style={{
+              background: "#FFFFFF",
+              border: "1px solid #E5E5E0",
+              borderRadius: "16px",
+              borderTopLeftRadius: "4px",
+              padding: "14px 18px",
+              fontSize: "15px",
+              color: "#6B6B68"
+            }}>
+              En train d'écrire…
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </main>
+
+      {/* Zone de saisie */}
+      <footer style={{
+        padding: "20px 24px 28px",
+        background: "#FFFFFF",
+        borderTop: "1px solid #E5E5E0"
+      }}>
+        <form
+          onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
+          style={{
+            maxWidth: "760px",
+            margin: "0 auto",
+            display: "flex",
+            gap: "12px"
+          }}
+        >
+          <label htmlFor="chat-input" style={{
+            position: "absolute",
+            width: "1px",
+            height: "1px",
+            overflow: "hidden",
+            clip: "rect(0,0,0,0)"
+          }}>
+            Votre message
+          </label>
           <input
+            id="chat-input"
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && sendMessage()}
-            placeholder="Poser une question..."
+            placeholder="Décrivez votre besoin de transport…"
+            disabled={loading}
             style={{
-  flex: 1,
-  border: "1px solid #e0e0e0",
-  borderRadius: "8px",
-  padding: "12px 16px",
-  fontSize: "0.9rem",
-  outline: "none",
-  color: "#000",
-  backgroundColor: "#fff"
-}}
+              flex: 1,
+              border: "1px solid #D9D9D4",
+              borderRadius: "10px",
+              padding: "14px 16px",
+              fontSize: "15px",
+              outline: "none",
+              background: loading ? "#F5F5F2" : "#FFFFFF"
+            }}
           />
           <button
-            onClick={sendMessage}
-            style={{ background: "#C8E000", border: "none", borderRadius: "8px", padding: "12px 16px", cursor: "pointer", fontWeight: "700" }}
+            type="submit"
+            disabled={loading || !input.trim()}
+            aria-label="Envoyer le message"
+            style={{
+              background: loading || !input.trim() ? "#E5E5E0" : "#C8E000",
+              color: "#1A1A1A",
+              border: "none",
+              borderRadius: "10px",
+              padding: "0 22px",
+              cursor: loading || !input.trim() ? "default" : "pointer",
+              fontWeight: 700,
+              fontSize: "15px"
+            }}
           >
-            ↑
+            Envoyer
           </button>
-        </div>
-      </div>
+        </form>
+      </footer>
     </div>
   );
 }
