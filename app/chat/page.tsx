@@ -55,14 +55,14 @@ export default function Chat(): JSX.Element {
       flexDirection: "column",
       height: "100vh",
       fontFamily: "'Inter', -apple-system, sans-serif",
-      background: "#FAFAF8"
+      background: "radial-gradient(circle at 12% 12%, rgba(216, 231, 98, 0.12), rgba(0, 0, 0, 0) 22%), radial-gradient(circle at 88% 55%, rgba(95, 170, 255, 0.16), rgba(0, 0, 0, 0) 20%), linear-gradient(rgb(8, 17, 31), rgb(11, 19, 38) 36%, rgb(9, 16, 29))"
     }}>
 
       {/* En-tête */}
       <header style={{
         padding: "20px 32px",
-        borderBottom: "1px solid #E5E5E0",
-        background: "#FFFFFF",
+        borderBottom: "1px solid #2a3a55",
+        background: "#1a2645",
         display: "flex",
         alignItems: "center",
         gap: "12px"
@@ -80,10 +80,10 @@ export default function Chat(): JSX.Element {
           fontSize: "18px"
         }} aria-hidden="true">N</div>
         <div>
-          <h1 style={{ fontSize: "16px", fontWeight: 700, color: "#1A1A1A", margin: 0 }}>
+          <h1 style={{ fontSize: "16px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>
             Neotravel
           </h1>
-          <p style={{ fontSize: "13px", color: "#6B6B68", margin: 0 }}>
+          <p style={{ fontSize: "13px", color: "#A0A8B8", margin: 0 }}>
             Assistant transport de groupe
           </p>
         </div>
@@ -138,9 +138,9 @@ export default function Chat(): JSX.Element {
             )}
             <div
               style={{
-                background: msg.role === "user" ? "#C8E000" : "#FFFFFF",
-                color: "#1A1A1A",
-                border: msg.role === "assistant" ? "1px solid #E5E5E0" : "none",
+                background: msg.role === "user" ? "#C8E000" : "#2a3a55",
+                color: msg.role === "user" ? "#1A1A1A" : "#E0E0E0",
+                border: msg.role === "assistant" ? "1px solid #3a4a65" : "none",
                 borderRadius: "16px",
                 borderTopLeftRadius: msg.role === "assistant" ? "4px" : "16px",
                 borderTopRightRadius: msg.role === "user" ? "4px" : "16px",
@@ -200,13 +200,13 @@ export default function Chat(): JSX.Element {
               N
             </div>
             <div style={{
-              background: "#FFFFFF",
-              border: "1px solid #E5E5E0",
+              background: "#2a3a55",
+              border: "1px solid #3a4a65",
               borderRadius: "16px",
               borderTopLeftRadius: "4px",
               padding: "14px 18px",
               fontSize: "15px",
-              color: "#6B6B68"
+              color: "#E0E0E0"
             }}>
               En train d'écrire…
             </div>
@@ -219,8 +219,8 @@ export default function Chat(): JSX.Element {
       {/* Zone de saisie */}
       <footer style={{
         padding: "20px 24px 28px",
-        background: "#FFFFFF",
-        borderTop: "1px solid #E5E5E0"
+        background: "#1a2645",
+        borderTop: "1px solid #2a3a55"
       }}>
         <form
           onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
@@ -248,12 +248,14 @@ export default function Chat(): JSX.Element {
             disabled={loading}
             style={{
               flex: 1,
-              border: "1px solid #D9D9D4",
+              border: "1px solid #3a4a65",
               borderRadius: "10px",
               padding: "14px 16px",
               fontSize: "15px",
               outline: "none",
-              background: loading ? "#F5F5F2" : "#FFFFFF"
+              background: loading ? "#232e42" : "#2a3a55",
+              color: "#E0E0E0",
+              transition: "background-color 0.2s ease"
             }}
           />
           <button
@@ -261,14 +263,15 @@ export default function Chat(): JSX.Element {
             disabled={loading || !input.trim()}
             aria-label="Envoyer le message"
             style={{
-              background: loading || !input.trim() ? "#E5E5E0" : "#C8E000",
-              color: "#1A1A1A",
+              background: loading || !input.trim() ? "#3a4a65" : "#C8E000",
+              color: loading || !input.trim() ? "#A0A8B8" : "#1A1A1A",
               border: "none",
               borderRadius: "10px",
               padding: "0 22px",
-              cursor: loading || !input.trim() ? "default" : "pointer",
+              cursor: loading || !input.trim() ? "not-allowed" : "pointer",
               fontWeight: 700,
-              fontSize: "15px"
+              fontSize: "15px",
+              transition: "all 0.2s ease"
             }}
           >
             Envoyer
