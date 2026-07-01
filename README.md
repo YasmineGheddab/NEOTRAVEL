@@ -121,6 +121,18 @@ NEOTRAVEL/
 - Un compte Gmail configuré en OAuth2 dans n8n
 - Un compte pdfmunk pour la génération PDF
 
+### Configuration de l'environnement
+
+Avant de lancer le projet, créez un fichier `.env.local` à la racine du projet avec les variables d'environnement suivantes :
+```bash
+AIRTABLE_API_KEY="Ta_clé_API"
+AIRTABLE_BASE_ID="Ta_base_ID"
+AIRTABLE_USERS_TABLE=Utilisateurs
+AIRTABLE_LEADS_TABLE=Leads
+AIRTABLE_DEVIS_TABLE=Devis
+AIRTABLE_RELANCES_TABLE=Relances
+```
+
 ### Front-end
 
 ```bash
